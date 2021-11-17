@@ -9,6 +9,16 @@
  */
 
 class WC_Product_Event extends WC_Product {
+
+	/**
+	 * Initialize event product.
+	 *
+	 * @param mixed $product
+	 */
+	public function __construct( $product = 0 ) {
+		$this->product_type = 'product';
+		parent::__construct( $product );
+	}
     
     /**
      * Return the product type

@@ -77,11 +77,53 @@ function load_eventpress() {
 	add_filter( 'woocommerce_product_class', 'musilda_woocommerce_product_class', 10, 2 ); 
 	function musilda_woocommerce_product_class( $classname, $product_type ) {
 			
-		if ( $product_type == 'falcoholster' ) { 
-			$classname = 'WC_Product_Falcoholster';
+		if ( $product_type == 'event' ) { 
+			$classname = 'WC_Product_Event';
 		}
 		return $classname;
 			
 	}
+
+	add_filter( 'woocommerce_product_data_tabs', 'musilda_event_product_data_tabs', 10, 1 );
+	function musilda_event_product_data_tabs( $option ) {
+
+		global $post;
+		$product = wc_get_product( $post->ID );
+
+		if ( 'event' == $product->get_type() ) {
+
+			$option['general']['class'][] = 'show_if_event';
+			$option['general']['class'][] = 'active';
+			$option['inventory']['class'][] = 'hide_if_event';
+			$option['shipping']['class'][] = 'hide_if_event';
+			$option['linked_product']['class'][] = 'hide_if_event';
+			$option['attribute']['class'][] = 'hide_if_event';
+			$option['advanced']['class'][] = 'hide_if_event';
+
+		}
+
+		return $option;
+	}
+
+	/**
+	 * Show pricing fields for event product.
+	 */
+	add_action( 'admin_footer', 'event_product_custom_js' );
+	function event_product_custom_js() {
+
+		if ( 'product' != get_post_type() ) :
+			return;
+		endif;
+
+		?><script type='text/javascript'>
+			jQuery( document ).ready( function() {				
+				jQuery( '.options_group.pricing' ).addClass( 'show_if_event' );
+				jQuery( '.show_if_event' ).show();
+			});
+
+		</script><?php
+
+	}
+
 
 }
