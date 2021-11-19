@@ -92,17 +92,34 @@ function load_eventpress() {
 
 		if ( 'event' == $product->get_type() ) {
 
-			$option['general']['class'][] = 'show_if_event';
-			$option['general']['class'][] = 'active';
-			$option['inventory']['class'][] = 'hide_if_event';
-			$option['shipping']['class'][] = 'hide_if_event';
-			$option['linked_product']['class'][] = 'hide_if_event';
-			$option['attribute']['class'][] = 'hide_if_event';
-			$option['advanced']['class'][] = 'hide_if_event';
+			$option['general']['class'][] 			= 'show_if_event';
+			$option['general']['class'][] 			= 'active';
+			$option['inventory']['class'][] 		= 'hide_if_event';
+			$option['shipping']['class'][] 			= 'hide_if_event';
+			$option['linked_product']['class'][] 	= 'hide_if_event';
+			$option['attribute']['class'][] 		= 'hide_if_event';
+			$option['advanced']['class'][] 			= 'hide_if_event';
+
+			$option['event'] = array(
+				'label'    => __( 'Event', 'musilda-eventpress' ),
+				'target'   => 'musilda_eventpress_product_option',
+				'class'    => array( 'show_if_event' ),
+				'priority' => 60,
+			);
 
 		}
 
 		return $option;
+
+	}
+
+	add_action( 'woocommerce_product_data_panels', 'musilda_eventpress_product_option' );
+	function musilda_eventpress_product_option() {
+
+		echo '<div id="musilda_eventpress_product_option" class="panel woocommerce_options_panel">';
+			echo __( 'Event data', 'musilda-eventpress' );
+		echo '</div>';
+
 	}
 
 	/**
