@@ -118,7 +118,56 @@ function load_eventpress() {
 
 		echo '<div id="musilda_eventpress_product_option" class="panel woocommerce_options_panel">';
 			echo __( 'Event data', 'musilda-eventpress' );
-		echo '</div>';
+
+			global $post;
+			$min_participants = get_post_meta( $post->ID, '_min_participants', true );
+			if ( empty( $min_participants ) ) {
+				$min_participants = 1;
+			}
+			$max_participants = get_post_meta( $post->ID, '_max_participants', true );
+			if ( empty( $max_participants ) ) {
+				$max_participants = 1;
+			}
+
+			woocommerce_wp_text_input(
+				array(
+					'id'                => '_min_participants',
+					'value'             => $min_participants,
+					'label'             => __( 'Minimal participants', 'musilda-eventpress' ),
+					'placeholder'       => __( '1', 'musilda-eventpress' ),
+					'description'       => __( 'Add minimum participants for event', 'musilda-eventpress' ),
+					'type'              => 'number',
+					'custom_attributes' => array(
+						'step' => '1',
+						'min'  => '1',
+					),
+				)
+			);
+			woocommerce_wp_text_input(
+				array(
+					'id'                => '_max_participants',
+					'value'             => $max_participants,
+					'label'             => __( 'Maximal participants', 'musilda-eventpress' ),
+					'placeholder'       => __( '1', 'musilda-eventpress' ),
+					'description'       => __( 'Add maximal participants for event', 'musilda-eventpress' ),
+					'type'              => 'number',
+					'custom_attributes' => array(
+						'step' => '1',
+						'min'  => '1',
+					),
+				)
+			);
+
+			$event_start_date_time = get_post_meta( $post->ID, '_event_start_date_time', true );
+			if ( empty( $event_start_date_time ) ) {
+				$event_start_date_time = '';
+			}
+			echo '<p class="form-field event_start_date_time">
+				<label for="event_start_date_time">' . esc_html__( 'Event start date time', 'musilda-eventpress' ) . '</label>
+				<input type="text" class="short" name="_event_start_date_time" id="event_start_date_time" value="' . $event_start_date_time . '" />				
+			</p>';
+
+		echo '</div>';				
 
 	}
 
@@ -142,5 +191,63 @@ function load_eventpress() {
 
 	}
 
+	/**
+	 * Add admin assets
+	 * 
+	 */
+	add_action( 'admin_enqueue_scripts', 'eventpress_enqueue_admin_styles' );
+	function eventpress_enqueue_admin_styles() {
+		$current_screen = get_current_screen();
+		if ( 'product' == $current_screen->id ) {
+			wp_enqueue_style( 'bulma-calendar', plugins_url( 'assets/admin/css/bulma-calendar.css', __FILE__ ), array(), '1.0' );
+		}
+	}
+	add_action( 'admin_enqueue_scripts', 'eventpress_enqueue_admin_scripts' );
+	function eventpress_enqueue_admin_scripts() {
+		$current_screen = get_current_screen();
+		if ( 'product' == $current_screen->id ) {
+			wp_enqueue_script( 'bulma-calendar', plugins_url( 'assets/admin/js/bulma-calendar.min.js', __FILE__ ), array(), '1.0', true );
+			wp_enqueue_script( 'event-admin', plugins_url( 'assets/admin/js/main.js', __FILE__ ), array(), '1.0', true );
+		}
+	}
+
+	add_action( 'woocommerce_process_product_meta', 'musilda_product_fields_save' );
+	function musilda_product_fields_save( $post_id ){
+
+		//Check autosave
+		if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE ) {
+			return $post_id;	
+		}	
+			
+		//Don't update on Quick Edit
+		if ( defined('DOING_AJAX') ) {	
+			return $post_id;	
+		}	
+		
+		//Don't update on Quick Edit	
+		if ( !empty( $_REQUEST['bulk_edit'] ) ) {	
+			return $post_id;	
+		}
+	
+		if ( !empty( $_POST['_min_participants'] ) ) {
+			$_min_participants = sanitize_text_field( $_POST['_min_participants'] );
+			update_post_meta( $post_id, '_min_participants', $_min_participants );
+		} else {
+			delete_post_meta( $post_id, '_min_participants' );
+		}
+		if ( !empty( $_POST['_max_participants'] ) ) {
+			$_max_participants = sanitize_text_field( $_POST['_max_participants'] );
+			update_post_meta( $post_id, '_max_participants', $_max_participants );
+		} else {
+			delete_post_meta( $post_id, '_max_participants' );
+		}
+		if ( !empty( $_POST['_event_start_date_time'] ) ) {
+			$_event_start_date_time = sanitize_text_field( $_POST['_event_start_date_time'] );
+			update_post_meta( $post_id, '_event_start_date_time', $_event_start_date_time );
+		} else {
+			delete_post_meta( $post_id, '_event_start_date_time' );
+		}
+
+	}
 
 }
